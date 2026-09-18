@@ -114,10 +114,10 @@
                 type="email" 
                 id="userEmail" 
                 class="email-input" 
-                placeholder="hetparekh3185@gmail.com" 
+                placeholder="spotytask@gmail.com" 
                 autocomplete="email"
               />
-              <small class="input-hint" style="color:#1db954;margin-top:4px;display:block;">Required for Resend alerts. Use your Resend registered email.</small>
+              <small class="input-hint" style="color:#1db954;margin-top:4px;display:block;">Required for task alerts. Enter your email (e.g. spotytask@gmail.com).</small>
             </div>
 
             <!-- User Name -->
@@ -638,10 +638,11 @@
               ✉️ Real Email Alerts (Resend API)
               <span class="info-tag" style="background:rgba(29,185,84,0.15);color:#1db954;border-color:rgba(29,185,84,0.3);">Active</span>
             </label>
-            <small class="input-hint" style="margin-bottom:10px;display:block;line-height:1.5;">
-              Emails are sent via <strong style="color:#1db954;">Resend API</strong>. 
-              On the free tier, test emails from <code style="color:#1db954;background:#181818;padding:1px 4px;border-radius:3px;">onboarding@resend.dev</code> must be sent to your Resend account email (<strong>hetparekh3185@gmail.com</strong>).
-              <br><span style="color:#e0a82e;">📬 <strong>Important:</strong> Check your <strong>Spam / Junk</strong> folder in Gmail if the reminder is not in Primary!</span>
+            <small class="input-hint" style="margin-bottom:10px;display:block;line-height:1.6;">
+              Emails are dispatched via <strong style="color:#1db954;">Gmail SMTP / Resend API</strong>. 
+              <br>• Delivery destination defaults to: <strong style="color:#1db954;">spotytask@gmail.com</strong>.
+              <br>• <span style="color:#e0a82e;">⚠️ <strong>Gmail Spam Tip:</strong> Check your <strong>Spam / Junk</strong> folder, or search <code style="background:#181818;color:#1db954;padding:1px 4px;border-radius:3px;">in:anywhere SpotiTask</code> in Gmail.</span>
+              <br>• <a href="https://resend.com/emails" target="_blank" rel="noopener" style="color:#1db954;font-weight:600;text-decoration:underline;">Check live Resend email logs at resend.com/emails ↗</a>
             </small>
             <label class="input-label" for="backendUrl" style="font-size:11px;margin-top:8px;">
               Custom Backend URL (leave blank for Vercel auto)

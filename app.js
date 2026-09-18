@@ -1243,17 +1243,17 @@
           const json = await resp.json();
           if (resp.ok && json.success) {
             if (DOM.testEmailStatus) {
-              DOM.testEmailStatus.textContent = `✅ Test email sent to ${emailAddr}! (Check inbox & Spam/Junk folder)`;
-              DOM.testEmailStatus.style.color = '#1db954';
+              const info = json.id ? ` (ID: ${json.id.slice(0, 8)}…)` : '';
+              DOM.testEmailStatus.innerHTML = `<span style="color:#1db954;">✅ Dispatched to ${escapeHtml(emailAddr)}${info}!</span><br><small style="color:#e0a82e;display:block;margin-top:4px;">⚠️ If not in Primary inbox, check <strong>Spam/Junk</strong> or search <code style="background:#111;color:#1db954;padding:1px 4px;border-radius:3px;">in:anywhere SpotiTask</code> in Gmail.</small>`;
             }
-            showToast('Test Email Sent! 📬', `Check ${emailAddr} (including Spam/Junk)`, '✉️');
+            showToast('Email Dispatched 📬', `Accepted by Resend for ${emailAddr}`, '✉️');
           } else {
-            const errorMsg = json.error ? `${json.error}${json.hint ? ' (' + json.hint + ')' : ''}` : (json.hint || 'Unknown error');
+            const errorMsg = json.error ? `${json.error}${json.hint ? ' — ' + json.hint : ''}` : (json.hint || 'Unknown error');
             throw new Error(errorMsg);
           }
         } catch (err) {
           if (DOM.testEmailStatus) {
-            DOM.testEmailStatus.textContent = `❌ Failed: ${err.message}`;
+            DOM.testEmailStatus.textContent = `❌ ${err.message}`;
             DOM.testEmailStatus.style.color = '#ff6b6b';
           }
         } finally {

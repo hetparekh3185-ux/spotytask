@@ -19,10 +19,14 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || apiKey === 're_your_api_key_here') {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const hasResend = Boolean(resendApiKey && resendApiKey !== 're_your_api_key_here');
+  const hasGmailSmtp = Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+
+  if (!hasResend && !hasGmailSmtp) {
     return res.status(500).json({
-      error: 'RESEND_API_KEY is not configured. Add it in Vercel project settings → Environment Variables.'
+      error: 'No email service configured. Set RESEND_API_KEY or GMAIL_USER + GMAIL_APP_PASSWORD in environment variables.',
+      hint: 'For Resend: add RESEND_API_KEY. For direct Gmail: add GMAIL_USER & GMAIL_APP_PASSWORD.'
     });
   }
 
@@ -31,8 +35,6 @@ module.exports = async function handler(req, res) {
   if (!to) {
     return res.status(400).json({ error: 'Missing required field: to (email address)' });
   }
-
-  const resend = new Resend(apiKey);
 
   // Build a beautiful Spotify-themed HTML email
   const taskTitle = (task && task.title) || subject || 'Task Reminder';
@@ -44,6 +46,18 @@ module.exports = async function handler(req, res) {
     work: '💼', study: '📚', fitness: '🏋️', personal: '🌿', creative: '🎨', urgent: '🔥'
   };
   const emoji = categoryEmojis[taskCategory] || '⏰';
+  const cleanSubject = subject || `SpotiTask: ${taskTitle} is due now`;
+
+  // Fix anti-spam triggers: replace dead # link with live app URL
+  const appUrl = process.env.APP_URL || 'https://spotytask.vercel.app';
+  const actionHtml = `
+    <!-- CTA -->
+    <tr>
+      <td style="padding:0 32px 32px 32px;text-align:center;">
+        <a href="${appUrl}" style="display:inline-block;background:#1db954;color:#000000;padding:14px 36px;border-radius:30px;font-weight:700;font-size:15px;text-decoration:none;letter-spacing:0.3px;">Open SpotiTask</a>
+      </td>
+    </tr>
+  `;
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -87,17 +101,12 @@ module.exports = async function handler(req, res) {
             </td>
           </tr>
 
-          <!-- CTA -->
-          <tr>
-            <td style="padding:0 32px 32px 32px;text-align:center;">
-              <a href="#" style="display:inline-block;background:#1db954;color:#000000;padding:14px 36px;border-radius:30px;font-weight:700;font-size:15px;text-decoration:none;letter-spacing:0.3px;">Mark as Complete</a>
-            </td>
-          </tr>
+          ${actionHtml}
 
           <!-- Footer -->
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #282828;text-align:center;">
-              <p style="margin:0;color:#535353;font-size:12px;">Sent by <strong style="color:#1db954;">SpotiTask</strong> · Your Spotify-themed task manager</p>
+              <p style="margin:0;color:#535353;font-size:12px;">Sent by <strong style="color:#1db954;">SpotiTask</strong> · <a href="${appUrl}" style="color:#1db954;text-decoration:none;">Open App</a></p>
             </td>
           </tr>
 
@@ -108,41 +117,90 @@ module.exports = async function handler(req, res) {
 </body>
 </html>`;
 
-  try {
-    const fromAddress = process.env.RESEND_FROM_EMAIL || 'SpotiTask <onboarding@resend.dev>';
-    const result = await resend.emails.send({
-      from: fromAddress,
-      to: to,
-      subject: subject || `⏰ SpotiTask: "${taskTitle}" is due now!`,
-      text: `SpotiTask Reminder\n\n${emoji} ${taskTitle}\n${taskNotes ? taskNotes + '\n' : ''}Due: ${taskDue}\n\nThis reminder was sent by SpotiTask.`,
-      html: htmlBody
-    });
+  // Option 1: Direct Gmail SMTP if configured
+  if (hasGmailSmtp) {
+    try {
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD
+        }
+      });
 
-    if (result.error) {
-      console.error('Resend API error:', result.error);
-      const isDomainRestriction = result.error.statusCode === 403 || (result.error.message && result.error.message.includes('only send testing emails'));
-      return res.status(result.error.statusCode || 400).json({
+      const info = await transporter.sendMail({
+        from: `SpotiTask <${process.env.GMAIL_USER}>`,
+        to: to,
+        subject: cleanSubject,
+        text: `SpotiTask Reminder\n\n${emoji} ${taskTitle}\n${taskNotes ? taskNotes + '\n' : ''}Due: ${taskDue}\n\nSent by SpotiTask (${appUrl})`,
+        html: htmlBody
+      });
+
+      console.log('[SendEmail] Sent via Gmail SMTP:', info.messageId);
+      return res.status(200).json({
+        success: true,
+        id: info.messageId,
+        provider: 'gmail_smtp',
+        message: `Delivered directly to ${to} via Gmail SMTP.`
+      });
+    } catch (smtpErr) {
+      console.error('[SendEmail] Gmail SMTP error, falling back to Resend:', smtpErr);
+      if (!hasResend) {
+        return res.status(500).json({
+          success: false,
+          error: smtpErr.message || 'Gmail SMTP dispatch failed',
+          hint: 'Ensure your GMAIL_USER is correct and GMAIL_APP_PASSWORD is a valid 16-character Google App Password (not your personal Gmail password). Generate one at https://myaccount.google.com/apppasswords.'
+        });
+      }
+    }
+  }
+
+  // Option 2: Resend API (default or fallback)
+  if (hasResend) {
+    console.log(`[SendEmail] Dispatching via Resend to "${to}", Subject: "${cleanSubject}"`);
+
+    try {
+      const resend = new Resend(resendApiKey);
+      const fromAddress = process.env.RESEND_FROM_EMAIL || 'SpotiTask <onboarding@resend.dev>';
+      const result = await resend.emails.send({
+        from: fromAddress,
+        to: to,
+        reply_to: to,
+        subject: cleanSubject,
+        text: `SpotiTask Reminder\n\n${emoji} ${taskTitle}\n${taskNotes ? taskNotes + '\n' : ''}Due: ${taskDue}\n\nView task: ${appUrl}`,
+        html: htmlBody
+      });
+
+      if (result.error) {
+        console.error('[SendEmail] Resend API error:', result.error);
+        const isDomainRestriction = result.error.statusCode === 403 || (result.error.message && result.error.message.includes('only send testing emails'));
+        return res.status(result.error.statusCode || 400).json({
+          success: false,
+          error: result.error.message || 'Resend failed to send email',
+          name: result.error.name,
+          statusCode: result.error.statusCode,
+          hint: isDomainRestriction
+            ? 'Free tier only allows sending to your Resend registered account email. To send to any recipient, verify your domain at resend.com/domains, or use direct Gmail SMTP (set GMAIL_USER + GMAIL_APP_PASSWORD in .env).'
+            : 'Check the email address and your Resend dashboard logs.'
+        });
+      }
+
+      console.log(`[SendEmail] Successfully dispatched via Resend. ID: ${result.data?.id}`);
+
+      return res.status(200).json({
+        success: true,
+        id: result.data?.id,
+        provider: 'resend',
+        message: `Email accepted by Resend API for ${to}. Check your Gmail inbox and Spam/Junk folder.`
+      });
+    } catch (err) {
+      console.error('[SendEmail] Resend execution error:', err);
+      return res.status(500).json({
         success: false,
-        error: result.error.message || 'Resend failed to send email',
-        name: result.error.name,
-        statusCode: result.error.statusCode,
-        hint: isDomainRestriction
-          ? 'Free tier only allows sending to your Resend registered account email. To send to any recipient, verify your domain at resend.com/domains.'
-          : 'Check the email address and your Resend dashboard logs.'
+        error: err.message || 'Internal server error while sending email',
+        hint: 'Make sure your RESEND_API_KEY is valid in environment variables.'
       });
     }
-
-    return res.status(200).json({
-      success: true,
-      id: result.data?.id,
-      message: 'Email delivered to recipient via Resend API'
-    });
-  } catch (err) {
-    console.error('Resend execution error:', err);
-    return res.status(500).json({
-      success: false,
-      error: err.message || 'Internal server error while sending email',
-      hint: 'Make sure your RESEND_API_KEY is valid in environment variables.'
-    });
   }
 };

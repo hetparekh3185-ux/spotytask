@@ -7,13 +7,20 @@
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
-  "keywords": ["spotify", "todo", "task-manager", "resend", "reminders"],
+  "keywords": [
+    "spotify",
+    "todo",
+    "task-manager",
+    "resend",
+    "reminders"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "nodemailer": "^10.0.10",
     "resend": "^4.1.2"
   }
 }

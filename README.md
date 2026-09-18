@@ -60,7 +60,21 @@ SpotiTask is designed to deploy seamlessly to Vercel without requiring external 
 
 ---
 
-## 📧 Email Notice for Free Tier Resend Users
-When sending from the default testing sender (`onboarding@resend.dev`), Resend requires the destination email to be your verified Resend account email address (`hetparekh3185@gmail.com`). Check your **Spam / Junk** folder if testing emails don't appear in your Primary tab.
+## 📧 Email Options & Setup
 
-To send reminders to any recipient address, verify a custom domain at [resend.com/domains](https://resend.com/domains).
+SpotiTask supports two ways to deliver task reminders:
+
+### Option 1: Direct Gmail SMTP (Recommended)
+Deliver real emails from `spotytask@gmail.com` to any recipient without domain restrictions:
+1. Enable 2-Step Verification on your `spotytask@gmail.com` Google Account.
+2. Generate an **App Password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+3. In your `.env` file, add:
+   ```env
+   GMAIL_USER=spotytask@gmail.com
+   GMAIL_APP_PASSWORD=your_16_character_app_password
+   ```
+
+### Option 2: Resend API
+1. On the free tier default sender (`onboarding@resend.dev`), Resend requires the destination email to be your verified Resend account email address (`spotytask@gmail.com`). Check your **Spam / Junk** folder if testing emails don't appear in your Primary tab.
+2. To send reminders to any recipient address via Resend, verify a custom domain at [resend.com/domains](https://resend.com/domains).
+
