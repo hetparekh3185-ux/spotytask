@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SpotiTask — Spotify Styled Personal Todo & Reminders</title>
+  <meta name="description" content="Personal todo list and reminder app with Spotify style. Schedule tasks and receive instant alerts when time hits.">
+  <meta name="theme-color" content="#121212">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container (Universal Android & Desktop Responsive) -->
+  <div class="app-shell" id="appShell">
+    
+    <!-- Clean Universal Header / Android App Bar -->
+    <div class="top-status-header" id="topStatusHeader">
+      <div class="status-left">
+        <span class="status-clock" id="statusClock">12:00</span>
+      </div>
+      <div class="status-center">
+        <div class="camera-punch"></div>
+      </div>
+      <div class="status-right">
+        <svg class="status-icon" viewBox="0 0 16 12" fill="currentColor">
+          <rect x="0" y="8" width="2.5" height="4" rx="0.5"/>
+          <rect x="4" y="6" width="2.5" height="6" rx="0.5"/>
+          <rect x="8" y="3" width="2.5" height="9" rx="0.5"/>
+          <rect x="12" y="0" width="2.5" height="12" rx="0.5"/>
+        </svg>
+        <span class="status-text">5G</span>
+        <svg class="status-icon battery" viewBox="0 0 24 12" fill="currentColor">
+          <rect x="0.5" y="0.5" width="20" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1"/>
+          <rect x="2" y="2" width="14" height="8" rx="1.5" fill="currentColor"/>
+          <path d="M22 4.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="main-viewport" id="mainViewport">
+
+      <!-- ==============================================
+           SCREEN 1: WELCOME & ONBOARDING / LOGIN
+           ============================================== -->
+      <section class="screen auth-screen active" id="authScreen">
+        <div class="auth-content">
+          
+          <!-- Spotify Centered Brand Logo -->
+          <div class="auth-logo-wrapper">
+            <svg class="spotify-logo-large" viewBox="0 0 24 24" fill="#1ed760">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.503 17.308c-.216.353-.674.467-1.027.25-2.822-1.724-6.376-2.113-10.562-1.157-.404.093-.81-.16-.902-.564-.093-.404.16-.81.564-.902 4.582-1.047 8.513-.604 11.677 1.346.353.216.467.674.25 1.027zm1.468-3.262c-.272.443-.852.583-1.295.31-3.23-1.986-8.156-2.56-11.977-1.4-.5.152-1.028-.135-1.18-.635-.152-.5.135-1.028.635-1.18 4.37-1.326 9.805-.684 13.507 1.61.443.272.583.852.31 1.295zm.126-3.41c-3.873-2.3-10.258-2.512-13.96-1.388-.593.18-1.224-.155-1.404-.748-.18-.593.155-1.224.748-1.404 4.256-1.292 11.31-1.043 15.77 1.604.533.316.708 1.008.392 1.541-.316.533-1.008.708-1.541.392z"/>
+            </svg>
+          </div>
+
+          <!-- Hero Typography -->
+          <div class="auth-headers">
+            <h1 class="auth-title">Organize your day.<br>Free on SpotiTask.</h1>
+            <p class="auth-subtitle">Schedule your personal tasks like tracks in a playlist. Get instant alerts and sound chimes the exact moment time hits.</p>
+          </div>
+
+          <!-- Quick Return Banner (if user previously had a session) -->
+          <div class="returning-user-box hidden" id="returningUserBox">
+            <div class="returning-avatar" id="returningAvatar">A</div>
+            <div class="returning-info">
+              <span class="returning-label">Previous Session Found</span>
+              <strong class="returning-name" id="returningName">Welcome Back</strong>
+            </div>
+            <button type="button" class="btn-quick-login" id="btnQuickLogin">Continue</button>
+          </div>
+
+          <!-- Registration / Login Form -->
+          <form class="auth-form" id="authForm" novalidate>
+            <!-- Mobile Number Input Group -->
+            <div class="form-group">
+              <label for="userPhone" class="input-label">Mobile Number (for SMS notifications) *</label>
+              <div class="phone-input-row">
+                <select id="phoneCountry" class="country-select" aria-label="Country Code">
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+91" selected>🇮🇳 +91</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+55">🇧🇷 +55</option>
+                  <option value="+234">🇳🇬 +234</option>
+                </select>
+                <input 
+                  type="tel" 
+                  id="userPhone" 
+                  class="phone-input" 
+                  placeholder="Enter your mobile number" 
+                  required 
+                  autocomplete="tel-national"
+                />
+              </div>
+              <span class="input-hint">We'll alert this mobile number when your task is due.</span>
+            </div>
+
+            <!-- Email Input Group -->
+            <div class="form-group">
+              <label for="userEmail" class="input-label">Email Address (Real Gmail Reminders)</label>
+              <input 
+                type="email" 
+                id="userEmail" 
+                class="email-input" 
+                placeholder="hetparekh3185@gmail.com" 
+                autocomplete="email"
+              />
+              <small class="input-hint" style="color:#1db954;margin-top:4px;display:block;">Required for Resend alerts. Use your Resend registered email.</small>
+            </div>
+
+            <!-- User Name -->
+            <div class="form-group">
+              <label for="userName" class="input-label">Your Name</label>
+              <input 
+                type="text" 
+                id="userName" 
+                class="text-input" 
+                placeholder="e.g. Alex" 
+                autocomplete="name"
+              />
+            </div>
+
+            <!-- Auto-Login Checkbox Option -->
+            <div class="form-group auto-login-group">
+              <label class="checkbox-label" for="chkAutoLogin">
+                <input type="checkbox" id="chkAutoLogin" checked>
+                <span class="custom-check"></span>
+                <span class="checkbox-text">
+                  <strong>Auto-login on this device</strong>
+                  <small>Bypass this screen and open your dashboard directly</small>
+                </span>
+              </label>
+            </div>
+
+            <!-- Primary Spotify Green Pill Button -->
+            <button type="submit" class="btn-spotify-green" id="btnContinue">
+              Sign up free
+            </button>
+          </form>
+
+          <!-- Alternative Options -->
+          <div class="auth-social-list">
+            <button type="button" class="btn-spotify-social" id="btnSocialGoogle">
+              <svg class="social-icon" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5c1.7 0 3 .6 4 1.5l3-3C17.2 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.8C6.5 7.1 8.9 5 12 5z"/>
+                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                <path fill="#FBBC05" d="M5.6 14.9c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2L1.9 7.7C.7 10 0 11 0 12.7s.7 2.7 1.9 5l3.7-2.8z"/>
+                <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.5-2.1-6.4-5.1L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+          </div>
+
+          <div class="auth-footer-note">
+            <p>100% Free • No Subscription • Your tasks stay private on your device</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           SCREEN 2: SINGLE SPOTIFY DASHBOARD
+           ============================================== -->
+      <section class="screen dashboard-screen" id="dashboardScreen">
+        <!-- Top App Bar with Greeting & User Pill -->
+        <header class="spotify-app-bar">
+          <div class="app-bar-left">
+            <div class="user-avatar" id="userAvatarBtn" title="Account settings">
+              <span id="userAvatarInitial">A</span>
+            </div>
+            <div class="greeting-box">
+              <span class="greeting-sub" id="greetingSub">YOUR DAILY MIX</span>
+              <h2 class="greeting-heading" id="greetingHeading">Good evening</h2>
+            </div>
+          </div>
+          <div class="app-bar-right">
+            <!-- Push Notification Status Toggle -->
+            <button class="icon-btn" id="btnNotificationStatus" title="System Push Notifications">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span class="badge-dot" id="pushBadgeDot"></span>
+            </button>
+            <!-- SMS / Alert Logs Drawer -->
+            <button class="icon-btn" id="btnOpenLogs" title="Dispatched Alerts Log">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span class="badge-count" id="logBadgeCount">0</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- User Contact Pill Bar -->
+        <div class="user-pill-banner">
+          <div class="contact-pill" id="userPhonePill">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="pill-icon">
+              <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+            </svg>
+            <span id="displayPhone">+91 --</span>
+          </div>
+          <div class="contact-pill email-pill" id="userEmailPill">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="pill-icon">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            <span id="displayEmail">No email set</span>
+          </div>
+          <button class="pill-edit-btn" id="btnEditContact" title="Settings">Edit</button>
+        </div>
+
+        <!-- Scrollable Dashboard Body -->
+        <div class="dashboard-scrollable">
+
+          <!-- Filter Pills (Spotify category chips) -->
+          <div class="filter-chips-row">
+            <button class="filter-chip active" data-filter="all">All Tasks</button>
+            <button class="filter-chip" data-filter="upcoming">Upcoming</button>
+            <button class="filter-chip" data-filter="focus">In Progress</button>
+            <button class="filter-chip" data-filter="high">High Priority</button>
+            <button class="filter-chip" data-filter="completed">Completed</button>
+          </div>
+
+          <!-- SPOTIFY "NOW PLAYING" / FOCUS HERO CARD -->
+          <section class="now-playing-card" id="nowPlayingCard">
+            <div class="now-playing-header">
+              <div class="equalizer-bars" id="equalizerBars">
+                <span class="bar bar-1"></span>
+                <span class="bar bar-2"></span>
+                <span class="bar bar-3"></span>
+                <span class="bar bar-4"></span>
+              </div>
+              <span class="now-playing-label" id="focusLabel">NOW FOCUSING • NEXT DUE</span>
+              <span class="urgency-tag" id="urgencyTag">FREE TIME</span>
+            </div>
+
+            <div class="now-playing-main">
+              <div class="album-art" id="heroAlbumArt">
+                <div class="album-art-inner gradient-personal" id="heroGradient">
+                  <span class="album-emoji" id="heroEmoji">✨</span>
+                </div>
+              </div>
+              <div class="now-playing-info">
+                <h3 class="track-title" id="heroTaskTitle">Queue is clear</h3>
+                <p class="track-meta" id="heroTaskMeta">All caught up! Tap + Add Task below</p>
+                <div class="live-countdown" id="heroCountdown">
+                  <svg class="countdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span id="heroCountdownText">No alarms pending</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Playback Slider / Due Progress Bar -->
+            <div class="playback-bar-container">
+              <div class="playback-bar">
+                <div class="playback-fill" id="heroProgressBar" style="width: 0%;"></div>
+              </div>
+              <div class="playback-timestamps">
+                <span id="heroStartTime">--:--</span>
+                <span id="heroDueTime">--:--</span>
+              </div>
+            </div>
+
+            <!-- Playback Controls for Focus Session -->
+            <div class="playback-controls">
+              <button class="control-btn secondary" id="btnHeroSnooze" title="Snooze 5 mins">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>+5m</span>
+              </button>
+              <button class="control-btn play-circle" id="btnHeroTogglePlay" title="Start Focus Session">
+                <svg class="icon-play" id="iconHeroPlay" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <svg class="icon-pause hidden" id="iconHeroPause" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16"></rect>
+                  <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+              </button>
+              <button class="control-btn done-circle" id="btnHeroDone" title="Mark Task Completed">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <!-- METRICS SUMMARY ROW -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Active Queue</span>
+              <span class="metric-value" id="countActive">0</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Alerts Fired</span>
+              <span class="metric-value green" id="countAlertsFired">0</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Completed</span>
+              <span class="metric-value" id="countCompleted">0</span>
+            </div>
+          </div>
+
+          <!-- SPOTIFY TRACKLIST / TASK QUEUE -->
+          <section class="task-tracklist-section">
+            <div class="tracklist-header">
+              <div class="header-titles">
+                <h3 class="section-title">Your Daily Queue</h3>
+                <span class="section-subtitle" id="queueSubtitle">Your scheduled playlist of tasks</span>
+              </div>
+              <button class="btn-clear-completed" id="btnClearCompleted" title="Clear finished tasks">
+                Clean Completed
+              </button>
+            </div>
+
+            <!-- List of Task Tracks -->
+            <div class="tracklist" id="tracklistContainer">
+              <!-- Rendered dynamically by app.js -->
+            </div>
+
+            <!-- Empty Queue State -->
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">🎧</div>
+              <h4>Your Queue is Clear</h4>
+              <p>Schedule a task with a target time. SpotiTask will play an audio chime and alert your mobile number the exact moment it's due!</p>
+              <button class="btn-spotify-green-sm" id="btnEmptyAdd">
+                + Add First Task
+              </button>
+            </div>
+          </section>
+
+          <div class="scroll-bottom-spacer"></div>
+        </div>
+
+        <!-- DOCKED "+ ADD TASK" SPOTIFY PILL BUTTON -->
+        <div class="fab-container">
+          <button class="fab-pill-btn" id="btnOpenAddTask">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add Task & Reminder</span>
+          </button>
+        </div>
+
+        <!-- BOTTOM TAB NAVIGATION -->
+        <nav class="spotify-bottom-nav">
+          <button class="nav-tab active" data-tab="home" id="tabHome">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3.172l8 6.4V20a1 1 0 01-1 1h-4.5a.5.5 0 01-.5-.5V14a1 1 0 00-1-1h-2a1 1 0 00-1 1v6.5a.5.5 0 01-.5.5H5a1 1 0 01-1-1V9.572l8-6.4z"/>
+            </svg>
+            <span>Home</span>
+          </button>
+          <button class="nav-tab" data-tab="add" id="tabAdd">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>New Task</span>
+          </button>
+          <button class="nav-tab" data-tab="logs" id="tabLogs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+            <span>Alerts Log</span>
+          </button>
+          <button class="nav-tab" data-tab="profile" id="tabProfile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Profile</span>
+          </button>
+        </nav>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ==============================================
+       MODAL 1: ADD / EDIT TASK BOTTOM SHEET
+       ============================================== -->
+  <div class="modal-overlay" id="taskModalOverlay">
+    <div class="modal-sheet" id="taskModalSheet">
+      <div class="modal-drag-handle"></div>
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Queue a New Task</h3>
+        <button class="modal-close-btn" id="btnCloseModal">✕</button>
+      </div>
+
+      <form class="task-form" id="taskForm">
+        <input type="hidden" id="editTaskId" value="">
+
+        <!-- Task Title -->
+        <div class="form-group">
+          <label for="taskTitle" class="input-label">Task Name (Track Title) *</label>
+          <input 
+            type="text" 
+            id="taskTitle" 
+            class="modal-input" 
+            placeholder="e.g. Call Client, Workout, Submit Report" 
+            required
+          />
+        </div>
+
+        <!-- Category / Mood Selector -->
+        <div class="form-group">
+          <label class="input-label">Category / Genre</label>
+          <div class="category-selector-grid">
+            <label class="category-chip">
+              <input type="radio" name="category" value="work" checked>
+              <span class="chip-content gradient-work">💼 Work</span>
+            </label>
+            <label class="category-chip">
+              <input type="radio" name="category" value="study">
+              <span class="chip-content gradient-study">📚 Study</span>
+            </label>
+            <label class="category-chip">
+              <input type="radio" name="category" value="fitness">
+              <span class="chip-content gradient-fitness">🏋️ Fitness</span>
+            </label>
+            <label class="category-chip">
+              <input type="radio" name="category" value="personal">
+              <span class="chip-content gradient-personal">🌿 Personal</span>
+            </label>
+            <label class="category-chip">
+              <input type="radio" name="category" value="creative">
+              <span class="chip-content gradient-creative">🎨 Creative</span>
+            </label>
+            <label class="category-chip">
+              <input type="radio" name="category" value="urgent">
+              <span class="chip-content gradient-urgent">🔥 Urgent</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Date & Time Row -->
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="taskDate" class="input-label">Target Date *</label>
+            <input type="date" id="taskDate" class="modal-input" required>
+          </div>
+          <div class="form-group col">
+            <label for="taskTime" class="input-label">Alert Time *</label>
+            <input type="time" id="taskTime" class="modal-input" step="60" required>
+          </div>
+        </div>
+
+        <!-- Quick Time Presets (Real-life intervals) -->
+        <div class="quick-time-chips">
+          <span class="quick-label">Quick Set:</span>
+          <button type="button" class="time-preset-btn" data-minutes="5">+5 mins</button>
+          <button type="button" class="time-preset-btn" data-minutes="15">+15 mins</button>
+          <button type="button" class="time-preset-btn" data-minutes="30">+30 mins</button>
+          <button type="button" class="time-preset-btn" data-minutes="60">+1 hr</button>
+          <button type="button" class="time-preset-btn" data-minutes="120">+2 hrs</button>
+        </div>
+
+        <!-- Notification Channels Checkboxes -->
+        <div class="form-group notification-channels-box">
+          <span class="input-label">Notification Channels when time hits:</span>
+          <div class="channel-toggles">
+            <label class="channel-toggle">
+              <input type="checkbox" id="notifySMS" checked>
+              <span class="toggle-box"></span>
+              <div class="toggle-text">
+                <strong>📱 Mobile SMS</strong>
+                <small id="notifySmsTarget">To: your number</small>
+              </div>
+            </label>
+            <label class="channel-toggle">
+              <input type="checkbox" id="notifyEmail" checked>
+              <span class="toggle-box"></span>
+              <div class="toggle-text">
+                <strong>✉️ Email Alert</strong>
+                <small id="notifyEmailTarget">To: your email</small>
+              </div>
+            </label>
+            <label class="channel-toggle">
+              <input type="checkbox" id="notifyPush" checked>
+              <span class="toggle-box"></span>
+              <div class="toggle-text">
+                <strong>🔔 Audio Chime & System Push</strong>
+                <small>Audio synthesizer + device alert</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Priority & Notes -->
+        <div class="form-group">
+          <label for="taskNotes" class="input-label">Notes or Description (Optional)</label>
+          <textarea id="taskNotes" class="modal-textarea" rows="2" placeholder="Add details, steps, or important reminders..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="btnCancelModal">Cancel</button>
+          <button type="submit" class="btn-spotify-green-modal" id="btnSaveTask">Save to Queue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       MODAL 2: INCOMING DUE ALERT POPUP (TIME HIT!)
+       ============================================== -->
+  <div class="alert-modal-overlay" id="alarmModalOverlay">
+    <div class="alarm-card">
+      <div class="alarm-pulsing-rings">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+      </div>
+      
+      <div class="alarm-badge">
+        <svg class="bell-ringing" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
+        <span>TIME HIT • ALARM TRIGGERED</span>
+      </div>
+
+      <div class="alarm-album-wrapper">
+        <div class="alarm-album gradient-urgent" id="alarmCategoryGradient">
+          <span class="alarm-emoji" id="alarmEmoji">🔔</span>
+        </div>
+      </div>
+
+      <h2 class="alarm-task-title" id="alarmTaskTitle">Task Title Here</h2>
+      <p class="alarm-task-notes" id="alarmTaskNotes">Time is up! It's time to start working on this task.</p>
+
+      <!-- SMS & Email Confirmation Box -->
+      <div class="alarm-dispatch-status">
+        <div class="dispatch-row">
+          <span class="dispatch-status-dot sent"></span>
+          <span class="dispatch-text" id="alarmSmsStatus">📨 SMS Dispatched to: your number</span>
+        </div>
+        <div class="dispatch-row" id="alarmEmailRow">
+          <span class="dispatch-status-dot sent"></span>
+          <span class="dispatch-text" id="alarmEmailStatus">✉️ Email Dispatched to: your email</span>
+        </div>
+      </div>
+
+      <div class="alarm-actions">
+        <button class="btn-snooze-alarm" id="btnAlarmSnooze">Snooze 5 Min</button>
+        <button class="btn-complete-alarm" id="btnAlarmComplete">Complete Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       DRAWER 3: NOTIFICATION DISPATCH LOG & PROFILE
+       ============================================== -->
+  <div class="drawer-overlay" id="drawerOverlay">
+    <div class="drawer-panel" id="drawerPanel">
+      <div class="drawer-header">
+        <h3 class="drawer-title" id="drawerTitle">SMS & Email Alerts Log</h3>
+        <button class="drawer-close-btn" id="btnCloseDrawer">✕</button>
+      </div>
+
+      <div class="drawer-tabs">
+        <button class="drawer-tab active" data-dtab="logs" id="dtabLogs">Dispatched Alerts</button>
+        <button class="drawer-tab" data-dtab="profile" id="dtabProfile">Phone & Settings</button>
+      </div>
+
+      <!-- Logs Tab Content -->
+      <div class="dtab-content active" id="dcontentLogs">
+        <div class="logs-header-bar">
+          <span>Real-time alert dispatch history</span>
+          <button class="btn-text-action" id="btnClearLogs">Clear Log</button>
+        </div>
+        <div class="logs-list" id="logsListContainer">
+          <!-- Dynamically filled -->
+        </div>
+      </div>
+
+      <!-- Profile & Settings Tab Content -->
+      <div class="dtab-content" id="dcontentProfile">
+        <form class="profile-edit-form" id="profileEditForm">
+          <div class="form-group">
+            <label class="input-label" for="editUserPhone">Mobile Number (SMS Target)</label>
+            <input type="tel" id="editUserPhone" class="modal-input" required>
+          </div>
+          <div class="form-group">
+            <label class="input-label" for="editUserEmail">Email Address (Email Target)</label>
+            <input type="email" id="editUserEmail" class="modal-input">
+          </div>
+          <div class="form-group">
+            <label class="input-label" for="editUserName">Display Name</label>
+            <input type="text" id="editUserName" class="modal-input">
+          </div>
+
+          <!-- Auto-Login Toggle in Settings -->
+          <div class="form-group auto-login-toggle-box">
+            <label class="checkbox-label" for="editAutoLogin">
+              <input type="checkbox" id="editAutoLogin" checked>
+              <span class="custom-check"></span>
+              <span class="checkbox-text">
+                <strong>Auto-login Enabled</strong>
+                <small>Automatically open dashboard on next visit</small>
+              </span>
+            </label>
+          </div>
+
+          <!-- Webhook Integration for Live SMS/Telegram/Discord/Email -->
+          <div class="form-group webhook-box">
+            <label class="input-label" for="webhookUrl">
+              Custom Webhook URL (Optional)
+              <span class="info-tag">Twilio / Discord / Telegram / Zapier</span>
+            </label>
+            <input 
+              type="url" 
+              id="webhookUrl" 
+              class="modal-input" 
+              placeholder="https://discord.com/api/webhooks/... or Twilio Webhook"
+            >
+            <small class="input-hint">When a task hits, SpotiTask will POST the alert JSON directly to this URL.</small>
+          </div>
+
+          <!-- Resend Email Integration Panel -->
+          <div class="form-group resend-panel">
+            <label class="input-label">
+              ✉️ Real Email Alerts (Resend API)
+              <span class="info-tag" style="background:rgba(29,185,84,0.15);color:#1db954;border-color:rgba(29,185,84,0.3);">Active</span>
+            </label>
+            <small class="input-hint" style="margin-bottom:10px;display:block;line-height:1.5;">
+              Emails are sent via <strong style="color:#1db954;">Resend API</strong>. 
+              On the free tier, test emails from <code style="color:#1db954;background:#181818;padding:1px 4px;border-radius:3px;">onboarding@resend.dev</code> must be sent to your Resend account email (<strong>hetparekh3185@gmail.com</strong>).
+              <br><span style="color:#e0a82e;">📬 <strong>Important:</strong> Check your <strong>Spam / Junk</strong> folder in Gmail if the reminder is not in Primary!</span>
+            </small>
+            <label class="input-label" for="backendUrl" style="font-size:11px;margin-top:8px;">
+              Custom Backend URL (leave blank for Vercel auto)
+            </label>
+            <input
+              type="url"
+              id="backendUrl"
+              class="modal-input"
+              placeholder="https://your-server.onrender.com (optional)"
+              style="margin-bottom:10px;"
+            >
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <button type="button" id="btnTestEmail" class="btn-test-email">
+                📬 Send Test Email
+              </button>
+              <span id="testEmailStatus" class="test-email-status"></span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button type="submit" class="btn-spotify-green-modal">Save Profile</button>
+            <button type="button" class="btn-logout-danger" id="btnLogout">Log Out &amp; Switch Phone</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notification Banner -->
+  <div class="toast-notification" id="toastNotification">
+    <div class="toast-icon" id="toastIcon">🔔</div>
+    <div class="toast-content">
+      <h5 class="toast-title" id="toastTitle">Notification</h5>
+      <p class="toast-message" id="toastMessage">Message details</p>
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

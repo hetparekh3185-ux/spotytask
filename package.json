@@ -1,0 +1,19 @@
+{
+  "name": "spotytask",
+  "version": "1.0.0",
+  "description": "Spotify-themed personal task manager with real email reminders via Resend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["spotify", "todo", "task-manager", "resend", "reminders"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "resend": "^4.1.2"
+  }
+}

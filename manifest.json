@@ -1,0 +1,23 @@
+{
+  "name": "SpotiTask — Spotify Styled Todo & Reminders",
+  "short_name": "SpotiTask",
+  "description": "Personal todo list app with Spotify style. Schedule tasks and receive instant alerts when time hits.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ]
+}

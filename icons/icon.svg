@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="spGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1ed760" />
+      <stop offset="100%" stop-color="#1db954" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#1ed760" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="#121212"/>
+  <circle cx="256" cy="256" r="210" fill="#181818" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+  <!-- Spotify Waves Combined with Task Check -->
+  <g filter="url(#glow)">
+    <!-- Wave 1 (Upper) -->
+    <path d="M120 188c88-26 200-20 280 28" fill="none" stroke="url(#spGreenGrad)" stroke-width="32" stroke-linecap="round"/>
+    <!-- Wave 2 (Middle) -->
+    <path d="M142 258c74-20 164-16 232 24" fill="none" stroke="url(#spGreenGrad)" stroke-width="26" stroke-linecap="round"/>
+    <!-- Wave 3 / Checkmark Accent -->
+    <path d="M168 326c54-14 116-10 168 18" fill="none" stroke="url(#spGreenGrad)" stroke-width="22" stroke-linecap="round"/>
+  </g>
+  <!-- Todo Check Badge in Bottom-Right Corner -->
+  <circle cx="370" cy="370" r="76" fill="#1ed760"/>
+  <path d="M336 370l24 24 50-50" fill="none" stroke="#121212" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
