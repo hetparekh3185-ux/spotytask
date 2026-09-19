@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: spotytask
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+    healthCheckPath: /ping
