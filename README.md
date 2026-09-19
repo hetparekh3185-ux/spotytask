@@ -78,3 +78,38 @@ Deliver real emails from `spotytask@gmail.com` to any recipient without domain r
 1. On the free tier default sender (`onboarding@resend.dev`), Resend requires the destination email to be your verified Resend account email address (`spotytask@gmail.com`). Check your **Spam / Junk** folder if testing emails don't appear in your Primary tab.
 2. To send reminders to any recipient address via Resend, verify a custom domain at [resend.com/domains](https://resend.com/domains).
 
+---
+
+## ⏰ Independent Server-Side Scheduler (`node-cron`)
+
+SpotiTask automatically syncs your queued tasks with the server-side task store (`data/tasks.json`). An internal `node-cron` scheduler runs continuously every minute:
+- Evaluates pending tasks against their due timestamp.
+- Dispatches Spotify-themed HTML alerts directly to your inbox when a task is due.
+- Automatically marks tasks as notified so alerts are never sent twice.
+- **Runs independently of whether your browser tab is open, minimized, or closed.**
+
+### 🛑 Keeping Render (Free Tier) Awake 24/7
+
+Free web services on Render spin down into sleep mode after ~15 minutes of inactivity. When asleep, background timers stop running until traffic arrives.
+
+To keep your server active 24/7 without paying:
+1. **Sign up for free at [cron-job.org](https://cron-job.org) or [UptimeRobot](https://uptimerobot.com).**
+2. Create a new monitor / cron job with the URL:
+   ```text
+   https://<your-render-app>.onrender.com/ping
+   ```
+   *(or `https://<your-render-app>.onrender.com/api/cron-check` to simultaneously trigger an immediate check)*
+3. Set the interval to **every 10 minutes** (or 5 minutes).
+4. Save the monitor. This ping keeps your Render container awake indefinitely, ensuring `node-cron` fires your task reminder emails reliably on time!
+
+### 🔌 Background API Endpoints
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/ping` | `GET` | Lightweight keep-alive for UptimeRobot / cron-job.org |
+| `/api/health` | `GET` | Returns server uptime, task count, and status |
+| `/api/tasks/sync` | `POST` | Bidirectional task synchronization between frontend & server |
+| `/api/cron-check` | `GET` / `POST` | Evaluates due tasks and dispatches reminder emails on demand |
+| `/api/send-email` | `POST` | Dispatches single email via Gmail SMTP or Resend API |
+
+

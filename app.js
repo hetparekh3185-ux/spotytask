@@ -191,6 +191,7 @@
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(checkReminders, 1000);
+    setInterval(syncTasksWithBackend, 30000); // Periodic sync every 30s
 
     // AUTO-LOGIN LOGIC:
     // If user previously logged in and autoLogin is enabled, automatically enter dashboard
@@ -204,6 +205,9 @@
     renderTasks();
     renderLogs();
     updateNotificationPermissionBadge();
+
+    // Initial background sync with server scheduler
+    syncTasksWithBackend();
   }
 
   function registerServiceWorker() {
@@ -246,6 +250,7 @@
     } catch (e) {
       console.error(e);
     }
+    syncTasksWithBackend();
   }
 
   function saveTasks() {
@@ -255,6 +260,7 @@
       console.error(e);
     }
     renderTasks();
+    syncTasksWithBackend();
   }
 
   function saveLogs() {
@@ -482,20 +488,28 @@
     }
 
     if (task.notifyEmail && state.user.email) {
-      // Add optimistic log entry; status updated after real send
-      const emailLogId = 'log_' + Date.now() + '_email';
-      state.logs.unshift({
-        id: emailLogId,
-        taskId: task.id,
-        taskTitle: task.title,
-        channel: 'Email',
-        recipient: state.user.email,
-        timestamp: nowIso,
-        status: 'Sending…',
-        message: `SpotiTask Reminder: "${task.title}" is due now.`
-      });
-      // Fire real email via Resend
-      sendRealEmail(task, emailLogId);
+      if (task.emailSent) {
+        // Already dispatched by the background server scheduler!
+        if (DOM.alarmEmailStatus) {
+          DOM.alarmEmailStatus.textContent = `✅ Email already delivered by server scheduler to: ${state.user.email}`;
+          DOM.alarmEmailStatus.style.color = '#1db954';
+        }
+      } else {
+        // Add optimistic log entry; status updated after real send
+        const emailLogId = 'log_' + Date.now() + '_email';
+        state.logs.unshift({
+          id: emailLogId,
+          taskId: task.id,
+          taskTitle: task.title,
+          channel: 'Email',
+          recipient: state.user.email,
+          timestamp: nowIso,
+          status: 'Sending…',
+          message: `SpotiTask Reminder: "${task.title}" is due now.`
+        });
+        // Fire real email via Resend / Gmail
+        sendRealEmail(task, emailLogId);
+      }
     }
 
     // 5. Send External Webhook (if configured)
@@ -536,15 +550,95 @@
     }
   }
 
-  function getEmailEndpoint() {
+  function getApiBaseUrl() {
     if (state.user.backendUrl && state.user.backendUrl.trim()) {
-      const base = state.user.backendUrl.trim().replace(/\/$/, '');
-      if (base.endsWith('/send-email') || base.endsWith('/api/send-email')) {
-        return base;
-      }
-      return `${base}/api/send-email`;
+      return state.user.backendUrl.trim().replace(/\/$/, '');
     }
-    return '/api/send-email';
+    return '';
+  }
+
+  function getEmailEndpoint() {
+    const base = getApiBaseUrl();
+    if (base.endsWith('/send-email') || base.endsWith('/api/send-email')) {
+      return base;
+    }
+    return base ? `${base}/api/send-email` : '/api/send-email';
+  }
+
+  function getSyncEndpoint() {
+    const base = getApiBaseUrl();
+    return base ? `${base}/api/tasks/sync` : '/api/tasks/sync';
+  }
+
+  let isSyncInProgress = false;
+  async function syncTasksWithBackend() {
+    if (isSyncInProgress) return;
+    isSyncInProgress = true;
+    const endpoint = getSyncEndpoint();
+
+    try {
+      const payload = {
+        tasks: state.tasks.map(t => ({
+          ...t,
+          userEmail: state.user.email || t.userEmail || ''
+        })),
+        user: {
+          email: state.user.email || '',
+          name: state.user.name || '',
+          phone: state.user.phone ? `${state.user.country} ${state.user.phone}` : ''
+        }
+      };
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success && Array.isArray(data.tasks)) {
+          let updated = false;
+          const serverMap = new Map(data.tasks.map(t => [t.id, t]));
+
+          state.tasks.forEach(task => {
+            const serverTask = serverMap.get(task.id);
+            if (serverTask && serverTask.emailSent && !task.emailSent) {
+              task.emailSent = true;
+              task.alertTriggered = true;
+              updated = true;
+
+              const hasLog = state.logs.some(l => l.taskId === task.id && l.channel.includes('Email'));
+              if (!hasLog && state.user.email) {
+                state.logs.unshift({
+                  id: 'log_' + Date.now() + '_server_cron',
+                  taskId: task.id,
+                  taskTitle: task.title,
+                  channel: 'Email (Server Scheduler)',
+                  recipient: state.user.email,
+                  timestamp: serverTask.emailSentAt || new Date().toISOString(),
+                  status: 'Delivered',
+                  message: `[Server Cron] Sent reminder for "${task.title}".`
+                });
+                saveLogs();
+              }
+            }
+          });
+
+          if (updated) {
+            try {
+              localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks));
+            } catch (e) {}
+            renderTasks();
+            updateNowPlayingHero();
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[Sync] Server sync skipped (offline or server not reachable):', err.message);
+    } finally {
+      isSyncInProgress = false;
+    }
   }
 
   async function sendRealEmail(task, logId) {
@@ -575,6 +669,13 @@
       const json = await resp.json();
 
       if (resp.ok && json.success) {
+        // Mark task emailSent true so it won't duplicate on client or server
+        task.emailSent = true;
+        task.alertTriggered = true;
+        try {
+          localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(state.tasks));
+        } catch (e) {}
+
         // Update log status to Delivered
         const logEntry = state.logs.find(l => l.id === logId);
         if (logEntry) logEntry.status = 'Delivered';
@@ -584,6 +685,9 @@
           DOM.alarmEmailStatus.style.color = '#1db954';
         }
         showToast('Email Alert Sent ✉️', `Reminder delivered to ${state.user.email}`, '📬');
+
+        // Sync updated emailSent status to backend store
+        syncTasksWithBackend();
       } else {
         const errorDetail = json.error ? `${json.error}${json.hint ? ' — ' + json.hint : ''}` : (json.hint || 'Email send failed');
         throw new Error(errorDetail);

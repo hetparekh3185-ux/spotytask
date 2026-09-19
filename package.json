@@ -20,6 +20,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "node-cron": "^4.6.0",
     "nodemailer": "^10.0.10",
     "resend": "^4.1.2"
   }
